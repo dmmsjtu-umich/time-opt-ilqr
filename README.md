@@ -1,7 +1,5 @@
 # Fast Differential Dynamic Programming for Time-Optimal Trajectory Planning
 
-**GitHub:** [https://github.com/dmmsjtu-umich/time-optimal-ilqr](https://github.com/dmmsjtu-umich/time-optimal-ilqr)
-
 Time-optimal trajectory planning—generating motions that complete a task in the minimum possible time—is a fundamental requirement for agile robotic systems. This repository implements an efficient algorithm for jointly optimizing the control sequence and the total maneuver duration $T$ using iterative Linear Quadratic Regulator (iLQR).
 
 ## Problem Statement
