@@ -1,0 +1,58 @@
+
+We validate our proposed Propagator-based iLQR on four benchmark systems: Double Integrator, Segway Balance, Cartpole Swing-Up, and a 12-DOF Quadrotor. 
+We compare three horizon-selection strategies:
+\begin{enumerate}
+    \item \textbf{Ours (Propagator):} The proposed method using the Augmented State Propagator.
+    \item \textbf{Baseline-1 (Bruteforce):} Evaluating all horizons via standard backward Riccati sweeps (ground truth).
+    \item \textbf{Baseline-2 (OnePass):} The approximate strategy adapted from [1], using a single backward pass around a nominal horizon.
+\end{enumerate}
+
+% -----------------------------------------------------------------
+% FIGURE 2: Experiment 1 (Aggregate Performance)
+% -----------------------------------------------------------------
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{source/figures/experiment_whole.png}
+    \caption{\textbf{Experiment 1: Aggregate Performance.} 
+    Comparison of (a) Normalized runtime (log scale) relative to the Brute-force baseline, and (b) Normalized optimal cost relative to the global optimum. Data represents statistics over 25 randomized trials.}
+    \label{fig:results_main}
+\end{figure}
+
+\subsection{Experiment 1: Statistical Performance}
+Fig. \ref{fig:results_main} summarizes the computational efficiency and solution quality across 25 randomized trials for each system.
+
+\subsubsection{Computational Efficiency}
+As shown in Fig. \ref{fig:results_main}(a), our Propagator method (Blue) achieves massive speedups compared to the Bruteforce baseline (Orange). 
+Based on the aggregate data, our method achieves a median speedup of approximately $\mathbf{43.6\times}$ on the Cartpole Swing-Up task ($0.81$s vs $35.32$s) and $\mathbf{31.5\times}$ on the Segway Balance task ($0.11$s vs $3.47$s).
+
+Notably, on the high-dimensional Quadrotor system, our method ($\approx 2.46$s) is not only over $3\times$ faster than Bruteforce ($\approx 8.21$s) but also faster than the OnePass heuristic ($\approx 2.88$s). This result highlights that the $\mathcal{O}(N)$ complexity of our LFT propagation scales more favorably with state dimension than the complex window-shifting logic required by OnePass.
+
+\subsubsection{Optimality}
+Fig. \ref{fig:results_main}(b) verifies the solution quality. Our method (Blue) perfectly aligns with the $y=1.0$ line across all benchmarks, empirically confirming that the Augmented State Propagator introduces \textbf{zero approximation error}.
+
+In contrast, the OnePass method (Green) exhibits significant sub-optimality. Specifically, in the Cartpole Swing-Up task, it yields trajectories with a median cost increase of $\mathbf{7.2\%}$. This error stems from identifying an incorrect horizon ($T_{med}=140$ vs optimal $181$), indicating that reusing value functions from a single linearization point is unreliable for highly nonlinear maneuvers.
+
+% -----------------------------------------------------------------
+% FIGURE 3: Experiment 2 (Case Study / Landscape)
+% -----------------------------------------------------------------
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{source/figures/Quadrotor_Hover_Jt.png}
+    \caption{\textbf{Experiment 2: Case Study on Quadrotor Hover.} 
+    (Top) Comparison of cost landscapes ($J_t$) computed by different methods. (Bottom) Breakdown of total runtime into linearization, selection, backward, and forward phases.}
+    \label{fig:quad_composite}
+\end{figure}
+
+\subsection{Experiment 2: Case Study on Cost Landscape}
+To explain the performance gap observed in Experiment 1, we analyze the internal mechanics of a single Quadrotor Hover trial in Fig. \ref{fig:quad_composite}.
+
+\subsubsection{Cost Landscape Analysis (Top Panel)}
+The top panel compares the cost curves ($J_t$ vs. horizon $t$). 
+The OnePass method (Purple) approximates the cost landscape by projecting the value function from a single nominal horizon. As visible in the plot, this approximation suffers from severe distortions (e.g., the artifact spike near $t=82$) when the system dynamics vary significantly over time. Consequently, it converges to a wrong local minimum at $T^*=84$, far from the true global optimum at $T^*=43$.
+
+In contrast, our Propagator curve (Blue) overlaps perfectly with the Bruteforce markers (Yellow). This confirms that our augmented formulation correctly captures the exact time-varying LQR cost, allowing the solver to locate the true global optimum.
+
+\subsubsection{Runtime Breakdown (Bottom Panel)}
+The bottom panel decomposes the runtime to reveal the source of efficiency. 
+The inefficiency of the Bruteforce method is visually evident in the massive Red block ("Select" phase), which represents the $\mathcal{O}(N^2)$ cost of repeated Riccati sweeps.
+Our Propagator method effectively eliminates this bottleneck. By compressing the horizon evaluation into an $\mathcal{O}(N)$ LFT propagation, we reduce the selection time to negligible levels, achieving a total runtime of $2.46$s compared to $8.21$s for Bruteforce, while maintaining rigorous optimality.

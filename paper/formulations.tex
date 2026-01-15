@@ -1,0 +1,115 @@
+
+
+\begin{align}
+    & \min_{x^i_t,u^i_t,b_t,h_{k,m,t}} \;  w_1\sum_{t\in I_t} tb_t + w_2\sum_{t\in I_t\backslash\{T\}}|u^i_t| \\
+    \text{s.t. }& x^i_{t+1} = A^i_tx^i_t+B^i_tu^i_t,\; t\in I_t \\
+    & x^i_t \in X^i, u^i_t \in U^i \\
+    % &u_{lb} \leq u_t \leq u_{ub},\; \forall t\in I_t\backslash \{T\}\\
+    & x^i_{t=0} = x^i_s \\
+    & x^i_{t} \geq x^i_g - M(1-b_t),\;\;x^i_{t} \leq x^i_g + M(1-b_t) \label{milp1:cstr_goal}\\
+    & a^T_{k,m} x^i_t \leq c_{k,m} + M(1- h_{k,m,t}) + M\sum_{j=0}^{t}b_j, \nonumber \label{milp1:cstr_obst}\\
+    &\forall k \in I_k, \forall m \in I_m, \forall t \in I_t\\
+    &\sum_{m=1}^{M_k} h_{k,m,t} \geq 1, h_{k,m,t}\in\{0,1\}, \;\forall k \in I_k, \forall t \in I_t \label{milp1:cstr_obst_one_active}\\\\
+    &\sum_{t\in I_t}b_t = 1, b_t\in\{0,1\}\label{milp1:cstr_b}
+\end{align}
+
+% \subsection{Bilinear MILP Program}
+
+% \begin{align}
+%     & \min_{x_t,u_t,b'_t,h_{k,m,t}} \;\sum_{t\in I_t\backslash\{T\}}|u_t| + \sum_{t\in I_t} b'_t \\
+%     \text{s.t. }& x_t' = x_t b'_t, u_t' = u_t b'_t \\ 
+%     & x_tb'_{t-1} = A x_{t-1}b'_{t-1} + B u_{t-1}b'_{t-1},\; t\in I_t \backslash \{0\} \\
+%     & x_t \in X, u_t \in U \\
+%     % &u_{lb}b_t \leq u_t' \leq u_{ub}b_t,\; \forall t\in I_t\backslash \{T\}\\
+%     & x_{0}' = x_s\\
+%     & x_{T}' = x_g\\
+%     & a^T_{k,m} x_t' \leq c_{k,m}b'_t + M(1- h_{k,m,t})b'_t \nonumber \\
+%     &\forall k \in I_k, \forall m \in I_m, \forall t \in I_t\\
+%     &\sum_{m=1}^{M_k} h_{k,m,t} \geq 1,\;\forall k \in I_k, \forall t \in I_t\\
+%     &b'_t - b'_{t+1} \geq 0,\;\forall t\in I_t\backslash\{T\}\\
+%     &b'_t\in\{0,1\},\;\forall t\in I_t
+% \end{align}
+
+% Bilinear due to the terms $x_t b'_t, u_t b'_t, h_{k,m,t}b'_t$
+
+% \subsection{New MILP Program 1}
+% \begin{align}
+%     \min_{u}& \sum_{t\in I_t\backslash\{T\}}|u_t'| + \sum_{t\in I_t} b_t \\
+%     \text{s.t. } & x_t'' = A x_{t-1}' + B u_{t-1}',\; \forall t\in I_t \backslash \{0\} \\
+%     & x_t'' \leq x'_t + M(b'_t - b'_{t-1}),\; \forall t\in I_t \backslash \{0\}\\
+%     & x_t'' \geq x'_t - M(b'_t - b'_{t-1}),\; \forall t\in I_t \backslash \{0\}\\
+%     & (x_t',b'_t)\in X', (x_t'',b'_{t-1})\in X', (u_t',b'_t) \in U'\\
+%     & x_{0}' = x_s\\
+%     & x_{T}' = x_g\\
+%     & a^T_{k,m} x_t' \leq c_{k,m}b'_t + M(1- h_{k,m,t}) \nonumber \\
+%     &\forall k \in I_k, \forall m \in I_m, \forall t \in I_t\\
+%     &\sum_{m=1}^{M_k} h_{k,m,t} \geq 1,\;\forall k \in I_k, \forall t \in I_t\\
+%     &b'_t - b'_{t+1} \geq 0,\;\forall t\in I_t\backslash\{T\}\\
+%     &b'_t\in\{0,1\},\;\forall t\in I_t
+% \end{align}
+% In this program, similar to previous notations, let $x'_t = x_tb_t'$, $u'_t = x_t b_t'$. In addition, let $x''_t = x_tb_{t-1}'$.
+% Then $x''_t = x_tb_{t-1}' = Ax_{t-1}b'_{t-1} + Bu_{t-1}b'_{t-1} = Ax'_t + B u'_t$.
+% In addition, we know $x''_t = x'_t$ if $b'_t=b'_{t-1} \in \{0,1\}$, and $x''_t \neq x'_t$ otherwise ($b'_t=0,b'_{t-1}=1$).
+% Therefore, the following constraints hold: $x_t'' \leq x'_t + M(b_t - b_{r-1}), x_t'' \geq x'_t - M(b_t - b_{t-1})$.
+
+\subsection{Our New MILP Formulation}
+
+\begin{align}
+    \min_{u}& \sum_{t\in I_t\backslash\{T\}}|u_t'| + \sum_{t\in I_t} b'_t \\
+    \text{s.t. } & x_t = A x_{t-1} + B u_{t-1}',\; t\in I_t \backslash \{0\} \\
+    & x_t\in X, (u_t',b'_t) \in U'\\
+    & x_{0}' = x_s\\
+    & x_{T}' = x_g\\
+    & a^T_{k,m} x_t \leq c_{k,m} + M(1- h_{k,m,t}) \nonumber \\
+    &\forall k \in I_k, \forall m \in I_m, \forall t \in I_t\\
+    &\sum_{m=1}^{M_k} h_{k,m,t} \geq 1,\;\forall k \in I_k, \forall t \in I_t\\
+    &b'_t - b'_{t+1} \geq 0,\;\forall t\in I_t\backslash\{T\}\\
+    &b'_t\in\{0,1\},\;\forall t\in I_t
+\end{align}
+
+Here, $Z'=\{(z,\lambda) | \lambda \geq 0, z \in \lambda Z \}$ is the perspective of $Z$.
+
+% Question: $(x_t',b'_t) \in X', (u_t',b'_t) \in U'$ is a conic constraint, which can be relaxed as $x_t' \in X_t$ (we do not require $(x_t,b'_t)$ to be in the perspective of $X$), $u_t' \in b_tU_t$ (we still require $(u_t',b'_t)$ to be in the perspective of $U$) under the assumption that the terminal state is an equilibrium, i.e., $x_g = A_tx_g$.
+% With this assumption, due to the dynamic constraint, when there is no control after the planning horizon ends at time $t$, i.e., $b'_{t-1}=1, b'_j=0, j=t,t+1,\cdots,T$, $x_t$ remains as a constant state which must be equal to $x_g$.
+
+
+\subsection{Existing MILP for Connected Multi-Agent}
+
+Here, $b_t$ indicates the maximum arrival time of all the agents, similar to min-max.
+
+\begin{align}
+    & \min_{x^i_t,u^i_t,b^i_t,h^i_{k,m,t}} \; \sum_{i\in I_a}\sum_{t\in I_t\backslash\{T\}}|u^i_t| + \sum_{i\in I_a}\sum_{t\in I_t\backslash\{T\}} tb_t \\
+    \text{s.t. }& x^i_t = A x^i_{t-1} + B u^i_{t-1},\; t\in I_t \backslash \{0\} \\
+    & x^i_t \in X^i, u^i_t \in U^i \\
+    % &u_{lb} \leq u_t \leq u_{ub},\; \forall t\in I_t\backslash \{T\}\\
+    & x^i_{0} = x^i_s\\
+    & x^i_{t} \geq x^i_g - M(1-b_t) \\
+    & x^i_{t} \leq x^i_g + M(1-b_t) \\
+    & a^T_{k,m} x^i_t \leq c_{k,m} + M(1- h^i_{k,m,t}) + M\sum_{j=0}^{t}b_j, \nonumber \\
+    &\forall k \in I_k, \forall m \in I_m, \forall t \in I_t\\
+    &\sum_{m=1}^{M_k} h^i_{k,m,t} \geq 1, h^i_{k,m,t}\in\{0,1\}, \;\forall k \in I_k, \forall t \in I_t\\
+    &\sum_{t\in I_t}b_t = 1, b_t\in\{0,1\}\\
+    & \alpha^T_n (x^i_t - x^j_t) \leq \beta_n + M(1-c^{i,j}_t) + M\sum_{t}b_t, \nonumber \\
+    &\forall t \in I_t, \forall n \in I_n \\
+    &\sum_{i,j \in I, j > i} c^{i,j}_t = |I_a'|-1, \forall I_a' \subseteq I_a
+\end{align}
+
+
+\subsection{New MILP Program for CMAPF}
+
+\begin{align}
+    \min_{u}& \sum_{t\in I_t\backslash\{T\}}|u_t'| + \sum_{t\in I_t} b_t \\
+    \text{s.t. } & x_t' = A x_{t-1}' + B u_{t-1}',\; t\in I_t \backslash \{0\} \\
+    & x_t'\in X, (u_t',b'_t) \in U'\\
+    & x_{0}' = x_s, x_{T}' = x_g\\
+    & a^T_{k,m} x_t' \leq c_{k,m}b_t + M(1- h_{k,m,t}) \nonumber \\
+    &\forall k \in I_k, \forall m \in I_m, \forall t \in I_t\\
+    &\sum_{m=1}^{M_k} h_{k,m,t} \geq 1,\;\forall k \in I_k, \forall t \in I_t\\
+    &b'_t - b'_{t+1} \geq 0,\;\forall t\in I_t\backslash\{T\}\\
+    &b'_t\in\{0,1\},\;\forall t\in I_t\\
+    & \alpha^T_n (x^i_t - x^j_t) \leq \beta_n + M(1-c^{i,j}_t) + M\sum_{t}b_t, \nonumber \\
+    &\forall t \in I_t, \forall n \in I_n \\
+    &\sum_{i,j \in I, j > i} c^{i,j}_t = |I_a'|-1, \forall I_a' \subseteq I_a
+\end{align}
+
+\subsubsection{Sum of Arrival Times}

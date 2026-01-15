@@ -1,0 +1,55 @@
+
+\subsection{Fixed Horizon LQR Problem}
+The conventional discrete LQR problem (with fixed planning horizon) can be solved to optimality via dynamic programming.
+Let $V_k(x_k)= \frac{1}{2}x_k^\top P_kx_k$ denote the value function that describes the cost-to-go from state $x_k$ at time step $k$, where $P_k$ is computed backwards from $k=T$ to $k=0$.
+When $k=T$, the cost-to-go is same as the terminal cost with $V_T(x_T) = \frac{1}{2}x_T^\top Q_T x_T$ and $P_{T} = Q_T$.
+For other $k= \{1,2,\cdots,T-1\}$, the optimal solution is characterized by the backwards Riccati equations:
+\begin{equation}\label{eq:riccati}
+\begin{aligned}
+S_k &= R_k + B_k^\top P_{k+1} B_k, \\
+K_k &= S_k^{-1} B_k^\top P_{k+1} A_k, \\
+P_k &= Q_k + A_k^\top P_{k+1} A_k - (A_k^\top P_{k+1} B_k) K_k.
+\end{aligned}
+\end{equation}
+With a backward pass from $k=T$ to $k=1$, all $K_k,P_k$ matrices can be computed and the optimal control for each step can be obtained by $u_k^* = -K_k x_k$. 
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\linewidth]{source/figures/ti_reuse.png}
+    \caption{\textbf{Time-invariant reuse.} The Riccati map $g$ is identical for all $k$, so one backward pass yields $\{P_k\}$ and we can read off $J_t$ by shifting the terminal index. This explains why horizon scanning is cheap when $g$ is time-invariant.}
+    \label{fig:ti_reuse}
+\end{figure}
+
+\subsection{Varying Horizon Time-Invariant LQR Problem}
+As opposed to fixing the planning horizon $T$ in LQR, when $T$ is also to be optimized, the existing approach in the literature~\cite{2021_OptimalHorizonDDP_Stachowicz} only considers the time-invariant case, and it is challenging to generalize this approach to the more general time-varying case.
+
+Specifically, let $g$ denote a mapping corresponding to the computation process $P_k = g(P_{k+1})$ which obtains $P_k$ from $P_{k+1}$.
+When the system dynamics satisfy $A_k=A,\forall k$, $B_k=B,\forall k$ (i.e., $x_{k+1}=A x_k + B u_k, \quad k = 0, \ldots, T-1$) and the cost terms satisfy $Q_k=Q,\forall k$, $R_k=R,\forall k$, the matrices $A, B, Q, R$ in the Ricatti equations are all constant for all time steps $k$.
+As a result, the mapping $g$ becomes
+\begin{align}
+P_k &= g(P_{k+1}) \label{eq:Pk_map} \\
+    &= Q + A^\top P_{k+1}
+       \bigl[I - B(R + B^\top P_{k+1} B)^{-1} B^\top P_{k+1}\bigr] A . \nonumber
+\end{align}
+which is invariant across different time steps.
+
+% ---------
+
+This enables computational reuse: a single Riccati backward pass yields $\{P_0, P_1, \ldots, P_N\}$, from which we can extract the cost for any horizon $t$ as:
+\begin{align}
+J_t \approx \tfrac{1}{2} x_0^\top P_{N-t} x_0 + tw.
+\end{align}
+The minimum among all these $J_t, t=0,1,2,\cdots,T-1$ provides the optimal solution to the problem and the corresponding $t$ is the optimal horizon.
+
+This result is already shown in optimal-horizon control \cite{2021_OptimalHorizonDDP_Stachowicz}.
+We illustrate this computational process in Fig.~\ref{fig:ti_reuse}.
+The same map $g(\cdot)$ is reused at every step, so one backward pass produces all $\{P_k, k=0,1,2,\cdots,T\}$. 
+The colors emphasize horizon shifting.
+For example, the blue case seeks $J_N$, uses $P_N$ as the terminal matrix (i.e., time index is $N\!+\!1$) and computes the cost via $P_0$, while the green case seeks $J_{N-1}$, uses $P_{N-1}$ as the terminal matrix (i.e., time index is $N$) and computes the cost via $P_1$.
+% In general, changing the horizon corresponds to reading $P_{N-t}$ in $J_t$.
+
+However, for time-varying systems, the mapping $g$ becomes $g_k$ that is also time-varying, and one would have to compute $g_k$ for each time possible horizon $k$.
+As a result, the $P$-matrices $P_k$ cannot be reused since for different horizon $k$, the set of matrices $P_t, t=0,1,2,\cdots,k$ also varies and cannot be reused.
+A naive approach is to solve for each possible horizon $k = 1,2,\cdots,N$ with a Riccati recursion, which leads to $N$ Riccati recursions in total and is computationally inefficient.
+% this reusability of computed $P_k$ is lost.
+

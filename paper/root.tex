@@ -1,0 +1,161 @@
+
+\documentclass[letterpaper, 10 pt, journal, twoside]{ieeetran}
+% \documentclass[lettersize,journal]{IEEEtran}
+% \documentclass[lettersize,journal]{IEEEtran}
+\newcommand{\T}{\mathsf{T}}
+\IEEEoverridecommandlockouts                              % This command is only needed if 
+                                                          % you want to use the \thanks command
+
+
+
+\usepackage{amsmath,amsfonts}
+\usepackage[ruled,vlined]{algorithm2e}
+% \usepackage{algorithmic}
+% \usepackage{algorithm}
+\usepackage{array}
+\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+\usepackage{textcomp}
+\usepackage{stfloats}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{cite}
+\hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
+\usepackage[ruled,vlined]{algorithm2e}
+% updated with editorial comments 8/9/2021
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning, calc, shapes.symbols}
+\usepackage{booktabs}
+%%%%%% My Packages %%%%%%
+% \usepackage{subcaption}
+% \usepackage{stfloats}
+\usepackage{multirow}
+\usepackage{lscape} % for large table
+\usepackage{tabularx} % for large table
+\usepackage{comment}
+\usepackage{graphicx}
+% \usepackage{subfigure,wrapfig}
+%\usepackage{subfigmat}
+\usepackage{color}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode} % algorithmic, \State{}, etc
+\usepackage{amssymb,amsmath}
+\usepackage{amsthm} % theorem, lemma, etc
+\usepackage{xspace}
+\usepackage{hyperref}
+
+\newtheorem{assumption}{Assumption}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{problem}{Problem}
+% \newtheorem{proof}{Proof}
+\newtheorem{remark}{Remark}
+%\usepackage{enumitem}
+% \usepackage{natbib}
+%%%%%% End of My Packages %%%%%%
+
+\newcommand{\blue}{\color{blue}}
+\newcommand{\green}{\color{green}}
+\newcommand{\citep}{\cite}
+
+\newcommand\abbrAlg{XXX\xspace}
+\newcommand\abbrAlgg{YYY\xspace}
+
+
+% \ifthenelse{\boolean{shortver}}{% 
+%     \thispagestyle{empty}
+%     \pagestyle{empty}
+% }{
+%     \thispagestyle{plain}
+%     \pagestyle{plain}
+%     \pagenumbering{arabic}
+% }
+
+ 
+\begin{document}
+
+
+\title{Fast Differential Dynamic Programming for Time-Optimal Trajectory Planning 
+}
+
+% Make room for more info lines in the \author command 
+\author{Miaomiao Dai$^{1}$, Zhongqiang Ren$^{1}$%
+}
+% Use only for final RAL version.
+
+
+% \author{Zhongqiang Ren$^{1}$, Sivakumar Rathinam$^{2}$ and Howie Choset$^{1}$
+% \thanks{Manuscript received July, 19, 2022; Revised March, 8, 2023; Accepted April, 4, 2023. This paper was recommended for publication by Editor Francois Chaumette upon evaluation of the Associate Editor and Reviewers' comments. This work was supported by National Science Foundation under Grant No. 2120219 and 2120529. \textit{(Corresponding author: Zhongqiang Ren.)}
+% }
+% \thanks{Zhongqiang Ren and Howie Choset are with Carnegie Mellon University, 5000 Forbes Ave., Pittsburgh, PA 15213, USA. (email: zhongqir@andrew.cmu.edu; choset@andrew.cmu.edu).}%
+% \thanks{Sivakumar Rathinam is with Texas A\&M University, College Station, TX 77843-3123. (email: srathinam@tamu.edu).}
+% \thanks{Color versions of one or more figures in this article are available at}
+% \thanks{Digital Object Identifier (DOI): }
+% }
+
+%\IEEEpubid{0000--0000/00\$00.00~\copyright~2021 IEEE}
+%% Remember, if you use this you must call \IEEEpubidadjcol in the second
+%% column for its text to clear the IEEEpubid mark.
+
+
+% Paper headers
+\markboth{IEEE Robotics and Automation Letters. Preprint Version. October, 2025}
+{Ren \MakeLowercase{\textit{et al.}}: CP-MILP Mixed Integer Linear Programming for Multi-Agent Motion Planning.} 
+% Use only for final RAL version
+
+\maketitle
+
+	\begin{abstract}
+		\input{abstract}
+	\end{abstract}
+
+ 
+\begin{IEEEkeywords}
+Motion and path planning, multi-robot systems, path planning for multiple mobile robots or agents. 
+\end{IEEEkeywords}
+	
+	\graphicspath{{./figures/}}
+	
+	\section{Introduction}\label{milp:sec:intro}
+	\input{intro}
+	
+	\section{Related Work}\label{milp:sec:related}
+	\input{related}
+	
+	\section{Problem Description}\label{milp:sec:problem}
+	\input{problem}
+
+    \section{Preliminaries}\label{milp:sec:preli}
+    \input{preli}
+    
+	\section{Optimal Horizon Time-Varying LQR}\label{milp:sec:method}
+	\input{method}
+    
+	\section{Optimal Horizon iLQR}\label{milp:sec:method2}
+    \input{method2}
+    
+	\section{Experimental Results}\label{milp:sec:result}
+	\input{result}
+    
+	\section{Conclusion and Future Work}\label{milp:sec:conclude}
+	\input{conclude}
+
+\section*{Acknowledgements}
+
+% 	\newpage
+	\bibliographystyle{IEEEtran}
+	\bibliography{references}
+
+    % \clearpage
+% 	\newpage
+
+
+% 	\appendix
+% 	\input{appendix}
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	
+\end{document}

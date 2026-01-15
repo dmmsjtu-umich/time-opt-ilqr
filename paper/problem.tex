@@ -1,0 +1,116 @@
+% \subsection{Notation}
+Let $x_{k+1} = f(x_k, u_k)$ denote the discrete-time dynamics of a system where $x_k \in \mathbb{R}^n$ and $u_k \in \mathbb{R}^m$ are the state and control vectors at time step $k \in \{0, 1, \ldots, T-1\}$, respectively, with $T \in \mathbb{N}$ being the planning time horizon.
+Let $U_T=\{u_0, \ldots, u_{T-1}\}$ denote the sequence of all controls.
+Let $\ell: \mathbb{R}^n \times \mathbb{R}^m \rightarrow \mathbb{R}_+$ and $\phi: \mathbb{R}^n \rightarrow \mathbb{R}_+$ denote the stage and terminal cost functions.
+Let a non-negative real number $w \geq 0$ denote a weight factor.
+This paper considers the following discrete-time optimal control problem with variable horizon.
+\begin{problem}[General Problem]\label{tooc:problem:general}
+\begin{equation}\label{eq:general_problem}
+\begin{aligned}
+\min_{U_T, T} \quad & J = \phi(x_T) + \sum_{k=0}^{T-1} \ell(x_k, u_k) + wT \\
+\text{s.t.} \quad & x_{k+1} = f(x_k, u_k), \quad k = 0, \ldots, T-1 \\
+& x_0 = \bar{x}_0 \\
+& T \in \{1, 2, \ldots, N\}
+\end{aligned}
+\end{equation}
+\end{problem}
+Here, the decision variables include both the control sequence $U_T=\{u_0, \ldots, u_{T-1}\}$ and the finish time $T$.
+The term $wT$ penalizes the planning horizon, and thus encourages time-optimal behaviour of the system.
+When $w=0$, Problem~\ref{tooc:problem:general} becomes the regular optimal control problem with a fixed planning horizon~\cite{}.
+When there is no stage and terminal costs $\phi(x_T)=0,\ell(x_k,u_k)=0, k=0,1,\cdots,T-1$ and $w > 0$, Problem~\ref{tooc:problem:general} becomes the regular time-optimal control problem~\cite{}.
+
+We will begin with a simplified linear quadratic variant of Problem~\ref{tooc:problem:general}.
+Let $A_k \in \mathbb{R}^{n \times n}$ and $B_k \in \mathbb{R}^{n \times m}$ denote the system and the input matrices, which can be time-varying as indicated by the subscript $k$. 
+Let $Q_k \succeq 0$ and $R_k \succ 0$ denote the positive semi-definite state and positive definite control cost matrices, respectively.
+Consider the case where the system is subject to linear dynamics $x_{k+1}=A_k x_k + B_k u_k$, and the stage cost $\ell(x_k,u_k) = x_k^\top Q_k x_k + u_k^\top R_k u_k$ and terminal cost $x_T^\top Q_T x_T$ are both quadratic.
+Problem~\ref{tooc:problem:general} becomes the following Time-Optimal variant of the Linear Quadratic Regulator (TO-LQR) problem.
+
+\begin{problem}[TO-LQR Problem]\label{tooc:problem:tolqr}
+\begin{equation}\label{eq:lqr_cost}
+\begin{aligned}
+\min_{U_{T}, T} \quad & J = \tfrac{1}{2} x_T^\top Q_T x_T + \sum_{k=0}^{T-1}\tfrac{1}{2}\big(x_k^\top Q_k x_k + u_k^\top R_k u_k\big) + wT \\
+\text{s.t.} \quad & x_{k+1}=A_k x_k + B_k u_k, \quad k = 0, \ldots, T-1 \\
+& x_0 = \bar{x}_0 \\
+& T \in \{1, 2, \ldots, N\}
+\end{aligned}
+\end{equation}
+\end{problem}
+
+When the dynamics and cost terms are nonlinear but twice continuously differentiable, Problem \ref{tooc:problem:general} can be iteratively approximated using Taylor expansion and solved using techniques similar to iterative LQR (iLQR).
+\begin{assumption}\label{tooc:assume:differentiable}
+    The cost terms $\phi,\ell$ are twice differentiable everywhere and the dynamics $f$ can be linearized everywhere.
+\end{assumption}
+For the rest of the paper, all our discussion on Problem \ref{tooc:problem:general} relies on this Assumption~\ref{tooc:assume:differentiable}.
+
+\begin{remark}
+Both Problem~\ref{tooc:problem:general} and \ref{tooc:problem:tolqr} can be modified to include an additional (soft) goal constraint $x_T=x_g$ where $x_g$ is the desired goal state to be reached by the system when $t=T$.
+Our approach can handle these variants with some modification.
+As opposed to this soft constraint on the goal state, an alternative way to include goal constraint is using soft constraint as described by the terminal cost $\phi$, which is common in the optimal control literature.
+We therefore formulate the Problem~\ref{tooc:problem:general} and \ref{tooc:problem:tolqr} without this hard goal constraint.
+\end{remark}
+
+% We refer to the variants with this goal constraints corresponding to Problem~\ref{tooc:problem:general} and \ref{tooc:problem:tolqr} as Problem~\ref{tooc:problem:general} and \ref{tooc:problem:tolqr}
+
+
+% \[
+%   x_{k+1}=f(x_k,u_k),\qquad x_0~\text{given},
+% \]
+% with the optimization problem
+% \[
+%   \min_{\{u_k\},\,T\in\{1,\ldots,N\}} \phi(x_T)+\sum_{k=0}^{T-1}\ell(x_k,u_k)+wT.
+% \]
+
+
+% the general problem \eqref{eq:general_problem} reduces to the time-optimal LQR problem:
+% \[
+%   x_{k+1}=A_k x_k + B_k u_k,\qquad x_0~\text{given},
+% \]
+% with cost function
+% \begin{equation}\label{eq:lqr_cost}
+%   J_T = \tfrac{1}{2} x_T^\top Q_T x_T + \sum_{k=0}^{T-1}\tfrac{1}{2}\big(x_k^\top Q_k x_k + u_k^\top R_k u_k\big) + wT,
+% \end{equation}
+% where $Q_k\succeq 0$, $R_k\succ 0$. The decision variables are the control sequence $U_{0:T-1} = \{u_0, \ldots, u_{T-1}\}$ and the stopping time $T$.
+
+% creating a trade-off between trajectory quality and time efficiency.
+
+% Let $w > 0$ denote the per-step time penalty.
+% Finally, let $\ell: \mathbb{R}^n \times \mathbb{R}^m \rightarrow \mathbb{R}_+$ and $\phi: \mathbb{R}^n \rightarrow \mathbb{R}_+$ denote the stage and terminal cost functions.
+
+% \subsection{General Time-Optimal Control Problem}
+% Consider the general discrete-time optimal control problem with variable horizon:
+% \begin{equation}\label{eq:general_problem}
+% \begin{aligned}
+% \min_{u_0, \ldots, u_{T-1}, T} \quad & J = \phi(x_T) + \sum_{k=0}^{T-1} \ell(x_k, u_k) + wT \\
+% \text{s.t.} \quad & x_{k+1} = f(x_k, u_k), \quad k = 0, \ldots, T-1 \\
+% & x_0 = \bar{x}_0 \\
+% & T \in \{1, 2, \ldots, N\}
+% \end{aligned}
+% \end{equation}
+% where the decision variables include both the control sequence $\{u_0, \ldots, u_{T-1}\}$ and the stopping time $T$. The term $wT$ penalizes the execution time, creating a trade-off between trajectory quality and time efficiency.
+
+% \subsection{Time-Optimal LQR (LTV)}
+% Under the assumptions that:
+% \begin{itemize}
+%     \item The dynamics are linear time-varying: $f(x_k, u_k) = A_k x_k + B_k u_k$
+%     \item The stage cost is quadratic: $\ell(x_k, u_k) = \frac{1}{2}(x_k^\top Q_k x_k + u_k^\top R_k u_k)$
+%     \item The terminal cost is quadratic: $\phi(x_T) = \frac{1}{2} x_T^\top Q_T x_T$
+% \end{itemize}
+% the general problem \eqref{eq:general_problem} reduces to the time-optimal LQR problem:
+% \[
+%   x_{k+1}=A_k x_k + B_k u_k,\qquad x_0~\text{given},
+% \]
+% with cost function
+% \begin{equation}\label{eq:lqr_cost}
+%   J_T = \tfrac{1}{2} x_T^\top Q_T x_T + \sum_{k=0}^{T-1}\tfrac{1}{2}\big(x_k^\top Q_k x_k + u_k^\top R_k u_k\big) + wT,
+% \end{equation}
+% where $Q_k\succeq 0$, $R_k\succ 0$. The decision variables are the control sequence $U_{0:T-1} = \{u_0, \ldots, u_{T-1}\}$ and the stopping time $T$.
+
+% \subsection{Time-Optimal iLQR}
+% When the dynamics and costs are nonlinear but twice continuously differentiable, the general problem \eqref{eq:general_problem} retains its original form:
+% \[
+%   x_{k+1}=f(x_k,u_k),\qquad x_0~\text{given},
+% \]
+% with the optimization problem
+% \[
+%   \min_{\{u_k\},\,T\in\{1,\ldots,N\}} \phi(x_T)+\sum_{k=0}^{T-1}\ell(x_k,u_k)+wT.
+% \]

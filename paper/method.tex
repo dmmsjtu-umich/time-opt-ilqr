@@ -1,0 +1,275 @@
+% \subsection{Method 1: Propagator-based Time-Optimal LQR via Linear Fractional Transformations}
+
+% We present a novel approach for time-optimal control of linear time-varying (LTV) systems that achieves $\mathcal{O}(Nn^3)$ complexity—matching a single Riccati backward pass—while evaluating costs for all possible arrival times.
+
+% \subsubsection{Key Insight and Motivation}
+
+
+
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.9\textwidth]{source/figures/propagator_flow.png}
+    \caption{\textbf{Time-varying propagator.} When $g_k$ varies with $k$, we switch to inverse form where each stage is an LFT $\tilde g_k$. The composed map $\tilde g_{0:k}$ remains an LFT with prefix parameters $(E_{0:k},F_{0:k},G_{0:k})$. This enables cheap horizon queries by reusing the composed mapping $\tilde g_{0:k}$ instead of reusing $\tilde P_k$ values.}
+    \label{fig:propagator_flow}
+\end{figure*}
+
+% \subsection{Our Approach for solving time optimal TVLQR problems}\label{sec:method1}
+% To address the loss of reusability in time-varying systems, we shift from \emph{reusing values} to \emph{reusing mappings}.
+% In the time-invariant case, different horizons reuse the same Riccati update and only change which $P_{N-t}$ is read in $J_t$ (Fig.~\ref{fig:reuse_and_prop}(a)).
+% In the time-varying case, $g_k$ changes with $k$, so the \emph{values} $\{P_k\}$ are not reusable across horizons.
+
+To address this challenge, our key idea (Fig.~\ref{fig:propagator_flow}) is to rewrite the map $g_k$ as a new linear fractional transformation (LFT) form $\tilde{g}_{0:k}$ (which is explained later), and some of the matrices that help compute $\tilde{g}_{0:k}$ can be reused.
+As a result, these matrices only need to be computed once for all possible horizons $k=1,2,\cdots,N$, as opposed to be repetitively computed for each possible horizon, which thus saves computational effort.
+
+\subsection{Linear Fractional Transformation Form}
+We first define necessary notations, then write down the results in Theorem~\ref{}, and finally provide the proof.
+
+Let $\tilde P_k := P_k^{-1}$ denote the inverse matrix of $P_k$.
+Let notation $\tilde g_{0:k}=\tilde g_0\circ\cdots\circ\tilde g_k$ denote a \textit{composed map} that composes the maps $g_0,g_1,\cdots,g_k$ sequentially.
+
+
+\begin{theorem}[LFT form]
+There exist matrices \((\overline{E}_{k},\overline{F}_{k},\overline{G}_{k})\), $k=0,1,2,\cdots,N$ such that
+\begin{equation}\label{eq:prefix_LFT}
+\tilde{g}_{0:k}(\tilde{P}) \;=\; E_{0:k} - F_{0:k}\,(\tilde{P}+G_{0:k})^{-1} F_{0:k}^\top,
+\end{equation}
+where, 
+\begin{equation}\label{eq:prefix_recursion}
+\begin{aligned}
+W_k      &= (E_k + G_{0:k-1})^{-1},\\
+E_{0:k}  &= E_{0:k-1} - F_{0:k-1} W_k F_{0:k-1}^\top,\\
+F_{0:k}  &= F_{0:k-1} W_k F_k,\\
+G_{0:k}  &= G_k - F_k^\top W_k F_k,\\
+E_k &= Q_k^{-1},\qquad\\
+F_k &= Q_k^{-1} A_k^\top,\qquad\\
+G_k &= A_k Q_k^{-1} A_k^\top + B_k R_k^{-1}B_k^\top,
+\end{aligned}
+\end{equation}
+with \(E_{0:0}=E_0,\;F_{0:0}=F_0,\;G_{0:0}=G_0\).
+\end{theorem}
+
+Note that $(A_k,B_k,Q_k,R_k)$ matrices are known as the input of the problem, and $(E_k,F_k,G_k,\overline{E}_k,\overline{F}_k,\overline{G}_k)$ are intermediate variables computed based on $(A_k,B_k,Q_k,R_k)$ and themselves recursively, and the composed map $\tilde{g}_k$ is computed based on $\overline{E}_k,\overline{F}_k,\overline{G}_k$ recursively.
+We will explain this recursive computation later in Alg.~\ref{} with the help of Fig.~\ref{}.
+We now prove the correctness of this theorem.
+
+\begin{proof}
+    .....
+\end{proof}
+
+\subsection{\abbrAlg Algorithm}
+
+xxxxxxxxxxxx
+
+
+------------------------------------------------
+
+
+% make the per-step update \emph{composable} by working with the \textbf{inverse matrix}
+% \[
+% \tilde P_k := P_k^{-1},
+% \]
+% which we refer to as the \emph{inverse form}.
+Under this change of variables, each stage becomes a linear fractional transformation (LFT)
+$\tilde P_k=\tilde g_k(\tilde P_{k+1})$.
+Although $\tilde P_k$ still depends on the terminal condition, the \emph{composed map}
+$\tilde g_{0:k}=\tilde g_0\circ\cdots\circ\tilde g_k$ stays in the same LFT family and can be summarized by a prefix triple
+$(E_{0:k},F_{0:k},G_{0:k})$ that depends only on stage data up to $k$.
+Thus we build $(E_{0:k},F_{0:k},G_{0:k})$ once, and evaluate each candidate horizon by a single query
+$\tilde P_0^{(t)}=\tilde g_{0:t-1}(\tilde P_t)$ (cf.~\eqref{eq:X0_from_prefix}), rather than re-running $t$ Riccati steps.
+
+
+
+\subsubsection{Step 1: Transformation to inverse Form}
+
+Rewrite \eqref{eq:riccati} as
+\[
+P_k
+= Q_k + A_k^\top\!\Bigl[
+P_{k+1}
+- P_{k+1}B_k (R_k + B_k^\top P_{k+1}B_k)^{-1} B_k^\top P_{k+1}
+\Bigr] A_k
+\]
+By the Woodbury identity
+\[
+(A+UCV)^{-1} = A^{-1} - A^{-1}U(C^{-1}+VA^{-1}U)^{-1}VA^{-1},
+\]
+we have
+\[
+\begin{aligned}
+&P_{k+1} - P_{k+1}B_k (R_k + B_k^\top P_{k+1}B_k)^{-1} B_k^\top P_{k+1} \\
+&= \bigl(P_{k+1}^{-1} + B_k R_k^{-1} B_k^\top\bigr)^{-1}.
+\end{aligned}
+\]
+Hence
+\begin{equation}\label{eq:P_via_X}
+P_k
+= Q_k + A_k^\top \bigl(P_{k+1}^{-1} + B_k R_k^{-1} B_k^\top\bigr)^{-1} A_k .
+\end{equation}
+
+Let \(\tilde{P}_k:=P_k^{-1}\) and \(U_k:=B_k R_k^{-1}B_k^\top\). Applying Woodbury again to \eqref{eq:P_via_X} yields the LFT form:
+\begin{equation}\label{eq:LFT_step}
+\begin{aligned}
+\tilde{P}_k
+&= \Bigl(Q_k + A_k^\top (\tilde{P}_{k+1}+U_k)^{-1} A_k \Bigr)^{-1}\\
+&= Q_k^{-1}
+   - Q_k^{-1} A_k^\top
+     \Bigl( (\tilde{P}_{k+1}+U_k) + A_k Q_k^{-1} A_k^\top \Bigr)^{-1}
+     A_k Q_k^{-1}.
+\end{aligned}
+\end{equation}
+
+Define, for each \(k\),
+\[
+E_k := Q_k^{-1},\qquad
+F_k := Q_k^{-1} A_k^\top,\qquad
+G_k := A_k Q_k^{-1} A_k^\top + U_k .
+\]
+Then \eqref{eq:LFT_step} becomes
+\begin{equation}\label{eq:LFT}
+\tilde{P}_k \;=\; E_k \;-\; F_k\,(\tilde{P}_{k+1}+G_k)^{-1} F_k^\top
+\;\equiv\; \tilde{g}_k(\tilde{P}_{k+1}),
+\end{equation}
+i.e., a \emph{linear fractional transformation} (LFT).
+
+\subsubsection{Step 2: Closure Under Composition}
+
+The LFT representation allows us to construct \textbf{propagators}—operators that 
+efficiently propagate the value function inverse across multiple time steps. 
+The key property is that these propagators can be composed without redundant computation.
+
+Define the composed map
+\(
+\tilde{g}_{0:k}(\tilde{P}):= \tilde{g}_0\circ \tilde{g}_1\circ \cdots \circ \tilde{g}_k(\tilde{P}).
+\)
+
+\begin{theorem}
+There exist matrices \((E_{0:k},F_{0:k},G_{0:k})\) such that
+\begin{equation}\label{eq:prefix_LFT}
+\tilde{g}_{0:k}(\tilde{P}) \;=\; E_{0:k} - F_{0:k}\,(\tilde{P}+G_{0:k})^{-1} F_{0:k}^\top .
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+(Base case \(k=0\)) is immediate from \eqref{eq:LFT} with
+\(E_{0:0}=E_0,\;F_{0:0}=F_0,\;G_{0:0}=G_0\).
+
+(Inductive step.)
+Assume \eqref{eq:prefix_LFT} holds for \(k-1\):
+\[
+\tilde{g}_{0:k-1}(\tilde{P})
+= E_{0:k-1} - F_{0:k-1}\,(\tilde{P}+G_{0:k-1})^{-1}F_{0:k-1}^\top .
+\]
+Then
+\[
+\begin{aligned}
+\tilde{g}_{0:k}(\tilde{P}) &= \tilde{g}_{0:k-1}\!\bigl(\tilde{g}_k(\tilde{P})\bigr) \\
+&= E_{0:k-1} - F_{0:k-1} \Bigl(E_k - F_k(\tilde{P}+G_k)^{-1}F_k^\top \\
+&\qquad + G_{0:k-1}\Bigr)^{-1}\! F_{0:k-1}^\top.
+\end{aligned}
+\]
+Apply Woodbury to
+\(
+\bigl((E_k + G_{0:k-1}) - F_k(\tilde{P}+G_k)^{-1}F_k^\top\bigr)^{-1}.
+\)
+Let \(W_k:=(E_k + G_{0:k-1})^{-1}\). Then
+\[
+\begin{aligned}
+&\bigl(W_k^{-1} - F_k(\tilde{P}+G_k)^{-1}F_k^\top\bigr)^{-1} \\
+&= W_k + W_k F_k \bigl(\tilde{P} + G_k - F_k^\top W_k F_k\bigr)^{-1} F_k^\top W_k.
+\end{aligned}
+\]
+Substituting and regrouping gives
+\[
+\begin{aligned}
+\tilde{g}_{0:k}(\tilde{P}) &= \underbrace{E_{0:k-1} - F_{0:k-1}W_k F_{0:k-1}^\top}_{E_{0:k}} \\
+&\quad - \underbrace{F_{0:k-1}W_k F_k}_{F_{0:k}} 
+\Bigl(\tilde{P} + \underbrace{G_k - F_k^\top W_k F_k}_{G_{0:k}}\Bigr)^{-1} \\
+&\qquad \times \underbrace{F_k^\top W_k F_{0:k-1}^\top}_{F_{0:k}^\top},
+\end{aligned}
+\]
+which is of the desired form \eqref{eq:prefix_LFT}. 
+\end{proof}
+
+\paragraph{Explicit prefix recursion.}
+Equivalently, the parameters obey (for \(k\ge 1\))
+\begin{equation}\label{eq:prefix_recursion}
+\begin{aligned}
+W_k      &= (E_k + G_{0:k-1})^{-1},\\
+E_{0:k}  &= E_{0:k-1} - F_{0:k-1} W_k F_{0:k-1}^\top,\\
+F_{0:k}  &= F_{0:k-1} W_k F_k,\\
+G_{0:k}  &= G_k - F_k^\top W_k F_k,
+\end{aligned}
+\end{equation}
+with \(E_{0:0}=E_0,\;F_{0:0}=F_0,\;G_{0:0}=G_0\).
+
+
+
+
+\subsubsection{Step 3: Efficient Query for All Arrival Times}
+
+Given the prefix triple at \(t-1\), the initial inverse for any candidate
+arrival time \(t\) and a terminal inverse \(\tilde{P}_t=(\alpha\tilde Q)^{-1}\) is
+\begin{equation}\label{eq:X0_from_prefix}
+\tilde{P}_0^{(t)} \;=\;
+E_{0:t-1} - F_{0:t-1}\,(\tilde{P}_t + G_{0:t-1})^{-1} F_{0:t-1}^\top .
+\end{equation}
+Then \(P_0^{(t)}=(\tilde{P}_0^{(t)})^{-1}\) and
+\begin{equation}\label{eq:Jt}
+J_t \;=\; \tfrac12\,x_0^\top P_0^{(t)} x_0 \;+\; w\,t .
+\end{equation}
+Thus all \(\{J_t\}_{t=1}^N\) are obtained from a single forward prefix build
+(using \eqref{eq:prefix_recursion}) plus \(N\) terminal updates
+via \eqref{eq:X0_from_prefix}.
+
+\subsubsection{Algorithm and Complexity Analysis}
+
+\begin{algorithm}[t]
+\SetAlgoLined
+\DontPrintSemicolon
+\caption{Propagator-based Time-Optimal LQR (LTV)}
+\label{alg:propagator-ltv}
+
+\KwIn{System matrices $\{A_k, B_k\}_{k=0}^{N-1}$, cost matrices $\{Q_k, R_k\}_{k=0}^{N-1}$, initial state $x_0$, terminal cost $\alpha\tilde{Q}$, time penalty $w$, horizon $N$}
+\KwOut{Optimal costs $\{J_t\}_{t=1}^N$ for all possible arrival times}
+
+\BlankLine
+\tcp{\textbf{Phase 1: Build Prefix Propagators}}
+\tcp{Step 1a: Compute inverse-form matrices}
+\For{$k \gets 0$ \KwTo $N-1$}{
+    Compute $Q_k^{-1}$ and $R_k^{-1}$\\
+    $E_k \gets Q_k^{-1}$\\
+    $F_k \gets Q_k^{-1} A_k^\top$\\
+    $G_k \gets A_k Q_k^{-1} A_k^\top + B_k R_k^{-1} B_k^\top$\\
+}
+
+\BlankLine
+\tcp{Step 1b: Accumulate prefix propagation}
+Initialize: $\bar{E}_0 \gets E_0$, $\bar{F}_0 \gets F_0$, $\bar{G}_0 \gets G_0$\;
+
+\For{$k \gets 1$ \KwTo $N-1$}{
+    $W_k \gets (E_k + \bar{G}_{k-1})^{-1}$\;
+    $\bar{E}_k \gets \bar{E}_{k-1} - \bar{F}_{k-1} W_k \bar{F}_{k-1}^\top$\;
+    $\bar{F}_k \gets \bar{F}_{k-1} W_k F_k$\;
+    $\bar{G}_k \gets G_k - F_k^\top W_k F_k$\;
+}
+
+\BlankLine
+\tcp{\textbf{Phase 2: Compute Costs for All Time Steps}}
+$\tilde{P}_T \gets (\alpha \tilde{Q})^{-1}$\tcp*{Terminal inverse matrix}
+
+\For{$t \gets 1$ \KwTo $N$}{
+    Retrieve prefix propagator: $(\bar{E}_{t-1}, \bar{F}_{t-1}, \bar{G}_{t-1})$\\
+    $W_t \gets (\tilde{P}_T + \bar{G}_{t-1})^{-1}$\\
+    $\tilde{P}_0 \gets \bar{E}_{t-1} - \bar{F}_{t-1} W_t \bar{F}_{t-1}^\top$\\
+    $P_0 \gets \tilde{P}_0^{-1}$\\
+    $J_t \gets \frac{1}{2} x_0^\top P_0 x_0 + t \cdot w$\;
+}
+
+\Return{$\{J_t\}_{t=1}^N$}\;
+\end{algorithm}
+
+\paragraph{Complexity and remarks.}
+The propagator has the same order as a single LQR backward sweep,
+\(\mathcal{O}(N n^3)\). Brute forcing all horizons by re-solving Riccati is
+\(\mathcal{O}(N^2 n^3)\).
